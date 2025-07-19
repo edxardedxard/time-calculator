@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Apple-style Time & Money Calculators</title>
 
-  <!-- ✅ App Icon Support -->
+  <!-- App Icon Support -->
   <link rel="apple-touch-icon" href="icon.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -26,20 +26,17 @@
       margin-right: auto;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      user-select: none;
     }
     h1 {
       font-weight: 700;
       font-size: 1.8rem;
       text-align: center;
       margin-bottom: 30px;
-      color: #f2f2f7;
     }
     h2 {
       font-weight: 600;
       font-size: 1.3rem;
       margin-bottom: 15px;
-      color: #f2f2f7;
       border-bottom: 1px solid #444448;
       padding-bottom: 8px;
     }
@@ -66,13 +63,8 @@
       font-size: 1rem;
       color: #f2f2f7;
       box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
-      font-family: inherit;
-      outline-offset: 2px;
-      user-select: text;
     }
-    input[type="time"]:focus,
-    input[type="number"]:focus,
-    textarea:focus {
+    input:focus, textarea:focus {
       background: #48484a;
       outline-color: #0a84ff;
       outline-style: solid;
@@ -96,8 +88,8 @@
       font-size: 1rem;
       padding: 12px 22px;
       cursor: pointer;
-      transition: background-color 0.25s ease;
       box-shadow: 0 3px 5px rgba(10, 132, 255, 0.6);
+      transition: background 0.25s;
     }
     button:hover {
       background: #0066d6;
@@ -116,19 +108,15 @@
     }
     .remove-btn:hover {
       background: #cc372f;
-      box-shadow: 0 4px 8px rgba(204, 55, 47, 1);
     }
     .remove-btn:active {
       background: #a72e26;
-      box-shadow: none;
     }
     .results {
       margin-top: 25px;
       font-size: 1.25rem;
       font-weight: 600;
-      color: #f2f2f7;
       min-height: 1.5em;
-      user-select: text;
     }
     hr {
       border: none;
@@ -137,15 +125,121 @@
       margin: 40px 0;
     }
     @media (max-width: 480px) {
-      body {
-        padding: 12px;
-        max-width: 100%;
-      }
-      section {
-        padding: 15px 18px;
-      }
-      button {
-        padding: 10px 16px;
-        font-size: 0.95rem;
-      }
-      input[type="tim]()
+      body { padding: 12px; }
+      section { padding: 15px 18px; }
+      input[type="time"], input[type="number"] { width: 100px; }
+      button { padding: 10px 16px; font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Apple-style Time & Money Calculators</h1>
+
+  <!-- Calculator 1 -->
+  <section>
+    <h2>Calculator 1: Start & End Times</h2>
+    <div id="timeEntries"></div>
+    <button onclick="addTimeEntry()">+ Add Time Entry</button><br /><br />
+    <label for="breakMinutes">Break (minutes to subtract): </label>
+    <input type="number" id="breakMinutes" value="0" min="0" /><br /><br />
+    <button onclick="calculateTimeTotal()">Calculate Total Time</button>
+    <div class="results" id="timeTotalResult"></div>
+  </section>
+  <hr />
+
+  <!-- Calculator 2 -->
+  <section>
+    <h2>Calculator 2: Hours & Minutes</h2>
+    <div id="hmEntries"></div>
+    <button onclick="addHMEntry()">+ Add Entry</button><br /><br />
+    <button onclick="calculateHMTotal()">Calculate Total</button>
+    <div class="results" id="hmTotalResult"></div>
+  </section>
+  <hr />
+
+  <!-- Calculator 3 -->
+  <section>
+    <h2>Calculator 3: Sum of Money (Paste multiple lines)</h2>
+    <textarea
+      id="numTextarea"
+      rows="8"
+      placeholder="Paste amounts here, one per line (e.g. 12.50 or 7,75)..."
+    ></textarea><br />
+    <button onclick="calculateNumTotal()">Calculate Sum</button>
+    <div class="results" id="numTotalResult"></div>
+  </section>
+
+  <script>
+    // Calculator 1: Time entries
+    function addTimeEntry() {
+      const c = document.getElementById('timeEntries');
+      const div = document.createElement('div');
+      div.className = 'entry';
+      div.innerHTML = `
+        <input type="time" class="startTime" />
+        <input type="time" class="endTime" />
+        <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+      `;
+      c.appendChild(div);
+    }
+    function calculateTimeTotal() {
+      let total = 0;
+      document.querySelectorAll('.entry').forEach(e => {
+        const s = e.querySelector('.startTime').value;
+        const t = e.querySelector('.endTime').value;
+        if (s && t) {
+          let [sh, sm] = s.split(':').map(Number);
+          let [eh, em] = t.split(':').map(Number);
+          let start = sh * 60 + sm, end = eh * 60 + em;
+          if (end < start) end += 1440; 
+          total += (end - start);
+        }
+      });
+      const br = parseInt(document.getElementById('breakMinutes').value) || 0;
+      total = Math.max(0, total - br);
+      const h = Math.floor(total / 60), m = total % 60;
+      document.getElementById('timeTotalResult').textContent = `Total Time: ${h}h ${m}m`;
+    }
+    // init two entries
+    addTimeEntry();
+    addTimeEntry();
+
+    // Calculator 2: Hours & Minutes
+    function addHMEntry() {
+      const c = document.getElementById('hmEntries');
+      const div = document.createElement('div');
+      div.className = 'hm-entry';
+      div.innerHTML = `
+        <input type="number" min="0" placeholder="Hours" />
+        <input type="number" min="0" max="59" placeholder="Minutes" />
+        <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+      `;
+      c.appendChild(div);
+    }
+    function calculateHMTotal() {
+      let total = 0;
+      document.querySelectorAll('.hm-entry').forEach(e => {
+        const h = parseInt(e.children[0].value) || 0;
+        const m = parseInt(e.children[1].value) || 0;
+        total += h * 60 + m;
+      });
+      const h = Math.floor(total / 60), m = total % 60;
+      document.getElementById('hmTotalResult').textContent = `Total: ${h}h ${m}m`;
+    }
+    addHMEntry();
+    addHMEntry();
+
+    // Calculator 3: Sum of Money
+    function calculateNumTotal() {
+      const lines = document.getElementById('numTextarea').value.trim().split('\n');
+      let sum = 0;
+      lines.forEach(l => {
+        const v = parseFloat(l.replace(',', '.'));
+        if (!isNaN(v)) sum += Math.round(v * 100);
+      });
+      const euros = Math.floor(sum / 100), cents = (sum % 100).toString().padStart(2, '0');
+      document.getElementById('numTotalResult').textContent = `Total: €${euros},${cents}`;
+    }
+  </script>
+</body>
+</html>
